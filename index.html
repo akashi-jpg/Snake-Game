@@ -98,6 +98,9 @@ document.addEventListener("keydown", function (event) {
         case "ArrowRight":
             if (direction.x === 0) direction = { x: 1, y: 0 };
             break;
+                case " ":
+            if (gameOver) resetGame();
+            break;
         default:
             return;
     }
@@ -120,6 +123,11 @@ function moveSnake() {
         y: snake[0].y + direction.y
     };
 
+    if (isCollision(newHead)) {
+        endGame();
+        return;
+    }
+
     const ateFood = newHead.x === food.x && newHead.y === food.y;
 
     snake.unshift(newHead);
@@ -135,33 +143,31 @@ function moveSnake() {
 }
 
         // Step 4: Game over
-function placeFood() {
-    do {
-        food = {
-            x: Math.floor(Math.random() * tileCount),
-            y: Math.floor(Math.random() * tileCount)
-        };
-    } while (snake.some(seg => seg.x === food.x && seg.y === food.y));
+const info = document.getElementById("info");
+let gameOver = false;
+
+function isCollision(head) {
+    const hitWall = head.x < 0 || head.x >= tileCount ||
+                    head.y < 0 || head.y >= tileCount;
+    const hitSelf = snake.some(seg => seg.x === head.x && seg.y === head.y);
+    return hitWall || hitSelf;
 }
 
-function moveSnake() {
-    const newHead = {
-        x: snake[0].x + direction.x,
-        y: snake[0].y + direction.y
-    };
+function endGame() {
+    clearInterval(gameTimer);
+    gameOver = true;
+    info.textContent = `Game over! Score: ${score}. Press Space to restart.`;
+}
 
-    const ateFood = newHead.x === food.x && newHead.y === food.y;
-
-    snake.unshift(newHead);
-
-    if (ateFood) {
-        score++;
-        placeFood();
-    } else {
-        snake.pop();
-    }
-
+function resetGame() {
+    snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+    direction = { x: 1, y: 0 };
+    score = 0;
+    gameOver = false;
+    info.textContent = "";
+    placeFood();
     drawGame();
+    gameTimer = setInterval(moveSnake, 200);
 }
 
         // Step 5: Improvements
@@ -169,7 +175,7 @@ let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
 let paused = false;
 
 function getSpeed() {
-    return Math.max(60, 200 - score * 5);   // faster as the score grows
+    return Math.max(60, 200 - score * 5);   
 }
 
 function startTimer() {
