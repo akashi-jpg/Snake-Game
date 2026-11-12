@@ -69,19 +69,19 @@
         //
 
         // Step 1: Movement (game loop)
-        // 
-const newHead = {
-    x: snake[0].x + direction.x,
-    y: snake[0].y + direction.y
-};
+function moveSnake() {
+    const newHead = {
+        x: snake[0].x + direction.x,
+        y: snake[0].y + direction.y
+    };
 
-snake.unshift(newHead);
-snake.pop();
+    snake.unshift(newHead);
+    snake.pop();
 
-drawGame();
+    drawGame();
+}
 
-
-const gameTimer = setInterval(moveSnake, 200);
+let gameTimer = setInterval(moveSnake, 200);
     
         // Step 2: Keyboard controls (arrow keys)
 document.addEventListener("keydown", function (event) {
@@ -105,6 +105,15 @@ document.addEventListener("keydown", function (event) {
 });
 
         //  Step 3: Eating and growing
+function placeFood() {
+    do {
+        food = {
+            x: Math.floor(Math.random() * tileCount),
+            y: Math.floor(Math.random() * tileCount)
+        };
+    } while (snake.some(seg => seg.x === food.x && seg.y === food.y));
+}
+
 function moveSnake() {
     const newHead = {
         x: snake[0].x + direction.x,
@@ -116,10 +125,8 @@ function moveSnake() {
     snake.unshift(newHead);
 
     if (ateFood) {
-        food = {
-            x: Math.floor(Math.random() * tileCount),
-            y: Math.floor(Math.random() * tileCount)
-        };
+        score++;
+        placeFood();
     } else {
         snake.pop();
     }
@@ -127,13 +134,52 @@ function moveSnake() {
     drawGame();
 }
 
-const gameTimer = setInterval(moveSnake, 200);
-
         // Step 4: Game over
+function placeFood() {
+    do {
+        food = {
+            x: Math.floor(Math.random() * tileCount),
+            y: Math.floor(Math.random() * tileCount)
+        };
+    } while (snake.some(seg => seg.x === food.x && seg.y === food.y));
+}
 
+function moveSnake() {
+    const newHead = {
+        x: snake[0].x + direction.x,
+        y: snake[0].y + direction.y
+    };
+
+    const ateFood = newHead.x === food.x && newHead.y === food.y;
+
+    snake.unshift(newHead);
+
+    if (ateFood) {
+        score++;
+        placeFood();
+    } else {
+        snake.pop();
+    }
+
+    drawGame();
+}
 
         // Step 5: Improvements
+let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
+let paused = false;
 
+function getSpeed() {
+    return Math.max(60, 200 - score * 5);   // faster as the score grows
+}
+
+function startTimer() {
+    clearInterval(gameTimer);
+    gameTimer = setInterval(moveSnake, getSpeed());
+}
+
+function updateInfo() {
+    info.textContent = `Score: ${score}  |  High score: ${highScore}`;
+}
         //
         // ===================================
 
