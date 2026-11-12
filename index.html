@@ -99,20 +99,15 @@ document.addEventListener("keydown", function (event) {
             if (direction.x === 0) direction = { x: 1, y: 0 };
             break;
         default:
-            return;               
-    }
-    event.preventDefault();       
+            return;
+}
+event.preventDefault();
 });
 
         //  Step 3: Eating and growing
 const ateFood = newHead.x === food.x && newHead.y === food.y;
 
-    snake.unshift(newHead);
-
-    if (ateFood) {
-    score += 10;
-    updateScore();
-
+if (ateFood) {
     food = {
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount)
