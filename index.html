@@ -76,13 +76,40 @@ function moveSnake() {
         y: snake[0].y + direction.y
     };
 
-    snake.unshift(newHead);   
-    snake.pop();              
+    const ateFood = newHead.x === food.x && newHead.y === food.y;
+    const hitWall = newHead.x < 0 || newHead.x >= tileCount ||
+        newHead.y < 0 || newHead.y >= tileCount;
+    const hitSnake = snake.some((segment, index) =>
+        (ateFood || index < snake.length - 1) &&
+        segment.x === newHead.x && segment.y === newHead.y
+    );
 
+    if (hitWall || hitSnake) {
+        clearInterval(gameTimer);
+        document.getElementById("info").textContent =
+            `Game over! Score: ${score}`;
+        return;
+    }
+
+    snake.unshift(newHead);
+    if (ateFood) {
+        score++;
+        do {
+            food = {
+                x: Math.floor(Math.random() * tileCount),
+                y: Math.floor(Math.random() * tileCount)
+            };
+        } while (snake.some(segment =>
+            segment.x === food.x && segment.y === food.y
+        ));
+    } else {
+        snake.pop();
+    }
+
+    document.getElementById("info").textContent = `Score: ${score}`;
     drawGame();
 }
 
-moveSnake(); 
 const gameTimer = setInterval(moveSnake, 200);
 
         // Step 2: Keyboard controls (arrow keys)
@@ -106,19 +133,7 @@ document.addEventListener("keydown", function (event) {
     event.preventDefault();       
 });
 
-        // Step 3: Eating and growing
-snake.unshift(newHead);
-
-if (ateFood) {
-    food = {
-        x: Math.floor(Math.random() * tileCount),
-        y: Math.floor(Math.random() * tileCount)
-    };
-} else {
-    snake.pop();
-}
-
-        // Step 4: Game over
+        // Step 3: Eating, growing, and game over are handled in moveSnake.
 
 
         // Step 5: Improvements
