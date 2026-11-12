@@ -5,11 +5,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <title>Snake Game</title>
-    <style>
-        canvas {
-            border: 1px solid black;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -59,136 +55,131 @@
         };
 
         drawGame();
-        // ===================================
-        // BUILD THE GAME FROM HERE
-        // ===================================
-        //
-        // Use your custom agent in VS Code Chat 
-        // to guide your work through each step. 
-        // Commit regularly.
-        //
-
-        // Step 1: Movement (game loop)
-function moveSnake() {
-    const newHead = {
-        x: snake[0].x + direction.x,
-        y: snake[0].y + direction.y
-    };
-
-    snake.unshift(newHead);
-    snake.pop();
-
-    drawGame();
-}
-
-let gameTimer = setInterval(moveSnake, 200);
 
         // Step 2: Keyboard controls (arrow keys)
-document.addEventListener("keydown", function (event) {
-    switch (event.key) {
-        case "ArrowUp":
-            if (direction.y === 0) direction = { x: 0, y: -1 };
-            break;
-        case "ArrowDown":
-            if (direction.y === 0) direction = { x: 0, y: 1 };
-            break;
-        case "ArrowLeft":
-            if (direction.x === 0) direction = { x: -1, y: 0 };
-            break;
-        case "ArrowRight":
-            if (direction.x === 0) direction = { x: 1, y: 0 };
-            break;
+        document.addEventListener("keydown", function (event) {
+            switch (event.key) {
+                case "ArrowUp":
+                    if (direction.y === 0) direction = { x: 0, y: -1 };
+                    break;
+                case "ArrowDown":
+                    if (direction.y === 0) direction = { x: 0, y: 1 };
+                    break;
+                case "ArrowLeft":
+                    if (direction.x === 0) direction = { x: -1, y: 0 };
+                    break;
+                case "ArrowRight":
+                    if (direction.x === 0) direction = { x: 1, y: 0 };
+                    break;
                 case " ":
-            if (gameOver) resetGame();
-            break;
-        default:
-            return;
-    }
-    event.preventDefault();
-});
+                    if (gameOver) resetGame();
+                    break;
+                case "p":
+                case "P":
+                    if (!gameOver) {
+                        paused = !paused;
+                        if (paused) clearInterval(gameTimer);
+                        else startTimer();
+                    }
+                    break;
+                default:
+                    return;
+            }
+            event.preventDefault();
+        });
 
-        //  Step 3: Eating and growing
-function placeFood() {
-    do {
-        food = {
-            x: Math.floor(Math.random() * tileCount),
-            y: Math.floor(Math.random() * tileCount)
-        };
-    } while (snake.some(seg => seg.x === food.x && seg.y === food.y));
-}
-
-function moveSnake() {
-    const newHead = {
-        x: snake[0].x + direction.x,
-        y: snake[0].y + direction.y
-    };
-
-    if (isCollision(newHead)) {
-        endGame();
-        return;
-    }
-
-    const ateFood = newHead.x === food.x && newHead.y === food.y;
-
-    snake.unshift(newHead);
-
-    if (ateFood) {
-        score++;
-        placeFood();
-    } else {
-        snake.pop();
-    }
-
-    drawGame();
-}
+        // Step 3: Eating and growing
+        function placeFood() {
+            do {
+                food = {
+                    x: Math.floor(Math.random() * tileCount),
+                    y: Math.floor(Math.random() * tileCount)
+                };
+            } while (snake.some(seg => seg.x === food.x && seg.y === food.y));
+        }
 
         // Step 4: Game over
-const info = document.getElementById("info");
-let gameOver = false;
+        const info = document.getElementById("info");
+        let gameOver = false;
 
-function isCollision(head) {
-    const hitWall = head.x < 0 || head.x >= tileCount ||
-                    head.y < 0 || head.y >= tileCount;
-    const hitSelf = snake.some(seg => seg.x === head.x && seg.y === head.y);
-    return hitWall || hitSelf;
-}
+        function isCollision(head) {
+            const hitWall = head.x < 0 || head.x >= tileCount ||
+                            head.y < 0 || head.y >= tileCount;
+            const hitSelf = snake.some(seg => seg.x === head.x && seg.y === head.y);
+            return hitWall || hitSelf;
+        }
 
-function endGame() {
-    clearInterval(gameTimer);
-    gameOver = true;
-    info.textContent = `Game over! Score: ${score}. Press Space to restart.`;
-}
+        function endGame() {
+            clearInterval(gameTimer);
+            gameOver = true;
+            info.textContent = `Game over! Score: ${score}  |  High score: ${highScore}  |  Press Space to restart`;
+        }
 
-function resetGame() {
-    snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
-    direction = { x: 1, y: 0 };
-    score = 0;
-    gameOver = false;
-    info.textContent = "";
-    placeFood();
-    drawGame();
-    gameTimer = setInterval(moveSnake, 200);
-}
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+            direction = { x: 1, y: 0 };
+            score = 0;
+            gameOver = false;
+            paused = false;
+            placeFood();
+            drawGame();
+            updateInfo();
+            startTimer();
+        }
 
         // Step 5: Improvements
-let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
-let paused = false;
+        let highScore = Number(localStorage.getItem("snakeHighScore")) || 0;
+        let paused = false;
+        let gameTimer;
 
-function getSpeed() {
-    return Math.max(60, 200 - score * 5);   
-}
+        function getSpeed() {
+            return Math.max(60, 200 - score * 5);
+        }
 
-function startTimer() {
-    clearInterval(gameTimer);
-    gameTimer = setInterval(moveSnake, getSpeed());
-}
+        function startTimer() {
+            clearInterval(gameTimer);
+            gameTimer = setInterval(moveSnake, getSpeed());
+        }
 
-function updateInfo() {
-    info.textContent = `Score: ${score}  |  High score: ${highScore}`;
-}
-        //
-        // ===================================
+        function updateInfo() {
+            info.textContent = `Score: ${score}  |  High score: ${highScore}  |  P = pause`;
+        }
 
+       
+        function moveSnake() {
+            const newHead = {
+                x: snake[0].x + direction.x,
+                y: snake[0].y + direction.y
+            };
+
+            if (isCollision(newHead)) {
+                endGame();
+                return;
+            }
+
+            const ateFood = newHead.x === food.x && newHead.y === food.y;
+
+            snake.unshift(newHead);
+
+            if (ateFood) {
+                score++;
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem("snakeHighScore", highScore);
+                }
+                placeFood();
+                startTimer();
+                updateInfo();
+            } else {
+                snake.pop();
+            }
+
+            drawGame();
+        }
+
+        // Start the game
+        updateInfo();
+        startTimer();
     </script>
 
 </body>
